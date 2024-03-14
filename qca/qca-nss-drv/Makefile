@@ -266,7 +266,7 @@ define Build/Compile
 		CROSS_COMPILE="$(TARGET_CROSS)" \
 		ARCH="$(LINUX_KARCH)" \
 		M="$(PKG_BUILD_DIR)" \
-		EXTRA_CFLAGS="$(EXTRA_CFLAGS)" \
+		EXTRA_CFLAGS="$(EXTRA_CFLAGS) -Wno-enum-conversion" \
 		SoC=$(SOC) \
 		$(KERNEL_MAKE_FLAGS) \
 		$(PKG_JOBS) \
