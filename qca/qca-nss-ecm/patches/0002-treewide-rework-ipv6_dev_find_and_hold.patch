@@ -1,7 +1,7 @@
 --- a/ecm_interface.c
 +++ b/ecm_interface.c
 @@ -339,9 +339,9 @@ static struct net_device *ecm_interface_
-
+ 
  	ECM_IP_ADDR_TO_NIN6_ADDR(addr6, addr);
  #if (LINUX_VERSION_CODE < KERNEL_VERSION(5, 9, 0))
 -	dev = (struct net_device *)ipv6_dev_find(&init_net, &addr6, 1);
@@ -29,7 +29,7 @@
 @@ -103,6 +103,10 @@
  #endif
  #endif
-
+ 
 +#ifdef ECM_IPV6_ENABLE
 +#include "ecm_front_end_ipv6.h"
 +#endif
@@ -51,7 +51,7 @@
  			/*
 @@ -628,9 +632,9 @@ bool ecm_front_end_gre_proto_is_accel_al
  		}
-
+ 
  #if (LINUX_VERSION_CODE < KERNEL_VERSION(5, 9, 0))
 -		dev = ipv6_dev_find(&init_net, &(orig_tuple->dst.u3.in6), 1);
 +		dev = ipv6_dev_find_and_hold(&init_net, &(orig_tuple->dst.u3.in6), 1);
