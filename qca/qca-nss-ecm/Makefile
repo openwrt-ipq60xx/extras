@@ -1,14 +1,15 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=qca-nss-ecm
-PKG_RELEASE:=1
+PKG_RELEASE:=4
 
 PKG_SOURCE_URL:=https://git.codelinaro.org/clo/qsdk/oss/lklm/qca-nss-ecm.git
 PKG_SOURCE_PROTO:=git
-PKG_SOURCE_DATE:=2024-02-05
-PKG_SOURCE_VERSION:=db6e481
-PKG_MIRROR_HASH:=6c6f6622ed6e9f75e7f2f5a2d3e8cabb32f002de91bac8cb7215733023b23f08
-PKG_VERSION:=12.4.r4-$(PKG_SOURCE_DATE)-$(PKG_SOURCE_VERSION)
+PKG_SOURCE_DATE:=2024-01-19
+PKG_SOURCE_VERSION:=b311cdf
+PKG_MIRROR_HASH:=79797be07df1b14306d47ec11c74b0a7e9d9d2005dd9de4f9f1d86d0eb87aa15
+QSDK_VERSION:=12.4.5.r5
+PKG_VERSION:=$(QSDK_VERSION)-$(PKG_SOURCE_DATE)-$(PKG_SOURCE_VERSION)
 
 PKG_BUILD_PARALLEL:=1
 PKG_FLAGS:=nonshared
@@ -21,7 +22,8 @@ define KernelPackage/qca-nss-ecm
   SECTION:=kernel
   CATEGORY:=Kernel modules
   SUBMENU:=Network Support
-  DEPENDS:=@(TARGET_qualcommax||TARGET_ipq60xx) \
+  DEPENDS:=@(TARGET_qualcommax||TARGET_ipq807x||TARGET_ipq60xx) \
+		   +ethtool \
 		   +kmod-nf-conntrack \
 		   +@NSS_DRV_IPV6_ENABLE \
 		   +@NSS_DRV_VIRT_IF_ENABLE \
@@ -54,7 +56,7 @@ define KernelPackage/qca-nss-ecm/install
 	$(INSTALL_DATA) ./files/qca-nss-ecm.firewall $(1)/etc/firewall.d/qca-nss-ecm
 	$(INSTALL_BIN) ./files/qca-nss-ecm.init $(1)/etc/init.d/qca-nss-ecm
 	$(INSTALL_BIN) ./files/ecm_dump.sh $(1)/usr/bin/
-	$(INSTALL_BIN) ./files/disable_offloads.sh $(1)/usr/bin/
+	$(INSTALL_BIN) ./files/disable_offloads.sh $(1)/lib/netifd/offload
 	$(INSTALL_BIN) ./files/on-demand-down $(1)/lib/netifd/offload/on-demand-down
 	$(INSTALL_DATA) ./files/qca-nss-ecm.uci $(1)/etc/config/ecm
 	$(INSTALL_DATA) ./files/qca-nss-ecm.defaults $(1)/etc/uci-defaults/99-qca-nss-ecm
@@ -74,13 +76,16 @@ ECM_MAKE_OPTS+=ECM_FRONT_END_NSS_ENABLE=y \
 			   ECM_INTERFACE_VLAN_ENABLE=y \
 			   ECM_CLASSIFIER_MARK_ENABLE=y \
 			   ECM_CLASSIFIER_DSCP_ENABLE=y \
-			   ECM_CLASSIFIER_PCC_ENABLE=n \
-			   ECM_BAND_STEERING_ENABLE=n
+			   ECM_CLASSIFIER_PCC_ENABLE=n
 endif
 
 # Disable ECM IPv6 support when global IPv6 support is disabled.
 ifneq ($(CONFIG_IPV6),)
 ECM_MAKE_OPTS+=ECM_IPV6_ENABLE=y
+endif
+
+ifneq ($(CONFIG_PACKAGE_kmod-qca-nss-drv-igs),)
+ECM_MAKE_OPTS+=ECM_CLASSIFIER_DSCP_IGS=y
 endif
 
 ifneq ($(CONFIG_PACKAGE_kmod-qca-nss-drv-ovpn-link),)
