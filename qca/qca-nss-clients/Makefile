@@ -439,6 +439,21 @@ define KernelPackage/qca-nss-drv-qdisc/Description
 Linux qdisc that aids in configuring shapers in the NSS
 endef
 
+define KernelPackage/qca-nss-drv-wifi-meshmgr
+  SECTION:=kernel
+  CATEGORY:=Kernel modules
+  SUBMENU:=Network Devices
+  TITLE:=NSS WiFi-Mesh manager for QCA NSS driver
+  DEPENDS:=+@NSS_DRV_WIFI_MESH_ENABLE \
+		  +PACKAGE_kmod-qca-nss-drv:kmod-qca-nss-drv
+  FILES:=$(PKG_BUILD_DIR)/wifi_meshmgr/qca-nss-wifi-meshmgr.ko
+  AUTOLOAD:=$(call AutoLoad,51,qca-nss-wifi-meshmgr)
+endef
+
+define KernelPackage/qca-nss-drv-wifi-meshmgr/Description
+Kernel module for WiFi Mesh manager
+endef
+
 define Build/InstallDev
   mkdir -p $(1)/usr/include/qca-nss-clients
 	$(CP) $(PKG_BUILD_DIR)/netlink/include/* $(1)/usr/include/qca-nss-clients/
@@ -586,6 +601,10 @@ ifneq ($(CONFIG_PACKAGE_kmod-qca-nss-drv-match),)
 NSS_CLIENTS_MAKE_OPTS+=match=y
 endif
 
+ifneq ($(CONFIG_PACKAGE_kmod-qca-nss-drv-wifi-meshmgr),)
+NSS_CLIENTS_MAKE_OPTS+=wifi-meshmgr=y
+endif
+
 define Build/Compile
 	+$(MAKE) -C "$(LINUX_DIR)" $(strip $(NSS_CLIENTS_MAKE_OPTS)) \
 	  CROSS_COMPILE="$(TARGET_CROSS)" \
@@ -622,3 +641,4 @@ $(eval $(call KernelPackage,qca-nss-drv-tun6rd))
 $(eval $(call KernelPackage,qca-nss-drv-qdisc))
 $(eval $(call KernelPackage,qca-nss-drv-igs))
 $(eval $(call KernelPackage,qca-nss-drv-netlink))
+$(eval $(call KernelPackage,qca-nss-drv-wifi-meshmgr))
